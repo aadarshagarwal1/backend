@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/sloppybear01/backend/issues"
   },
-  "homepage": "https://github.com/sloppybear01/backend#readme"
+  "homepage": "https://github.com/sloppybear01/backend#readme",
+  "devDependencies": {
+    "prettier": "^3.3.3"
+  }
 }
