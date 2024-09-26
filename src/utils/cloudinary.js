@@ -19,3 +19,4 @@ const uploadOnCloudnary = async (filePath) => {
     return error;
   }
 };
+export default uploadOnCloudnary;
