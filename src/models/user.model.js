@@ -36,7 +36,7 @@ const userSchema = new Schema(
       ref: "Video",
     },
     password: {
-      type: string,
+      type: String,
       required: [true, "Password is required."],
     },
     refreshToken: {
@@ -47,7 +47,7 @@ const userSchema = new Schema(
 );
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) next();
-  this.password = bcrypt.hash(this.password, 10);
+  this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 userSchema.methods.isPasswordCorrect = async function (password) {
