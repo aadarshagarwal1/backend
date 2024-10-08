@@ -22,7 +22,7 @@ const registerUser = asyncHandler(async (req, res) => {
       "User with same username or email address already exists!"
     );
   }
-  console.log(req.files);
+
   const avatarLocalFilePath = req.files?.avatar[0]?.path;
   const coverImageLocalFilePath = req.files?.coverImage[0]?.path;
   if (!avatarLocalFilePath) {
