@@ -4,17 +4,17 @@ import ApiResponse from "../utils/ApiResponse.js";
 import uploadOnCloudnary from "../utils/cloudinary.js";
 import { User } from "../models/user.model.js";
 const registerUser = asyncHandler(async (req, res) => {
-  const { fullName, email, userName, password } = req.body;
+  const { fullName, email, username, password } = req.body;
 
   if (
-    [fullName, email, userName, password].some((field) => {
+    [fullName, email, username, password].some((field) => {
       field?.trim() === "";
     })
   ) {
     throw new ApiError(400, "all fields required");
   }
   const existedUser = await User.findOne({
-    $or: [{ userName }, { email }],
+    $or: [{ username }, { email }],
   });
   if (existedUser) {
     throw new ApiError(
@@ -42,7 +42,7 @@ const registerUser = asyncHandler(async (req, res) => {
     coverImage: coverImage?.url || "",
     email,
     password,
-    userName: userName.toLowerCase(),
+    username: username.toLowerCase(),
   });
   const registeredUser = await User.findById(user._id).select(
     "-password -refreshToken"
@@ -54,5 +54,5 @@ const registerUser = asyncHandler(async (req, res) => {
     .status(201)
     .json(new ApiResponse(200, "User created successfully!"));
 });
-
-export { registerUser };
+const loginUser = asyncHandler(async (req, res) => {});
+export { registerUser, loginUser };

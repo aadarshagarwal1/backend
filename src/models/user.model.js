@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 const userSchema = new Schema(
   {
-    userName: {
+    username: {
       type: String,
       required: true,
       unique: true,
@@ -59,7 +59,7 @@ userSchema.methods.generateAccessToken = async function () {
       _id: this._id,
       email: this.email,
       fullName: this.fullName,
-      userName: this.userName,
+      username: this.username,
     },
     process.env.ACCESS_TOKEN_SECRET,
     {
