@@ -10,7 +10,7 @@ const generateTokens = async (userId) => {
     const refreshToken = await user.generateRefreshToken();
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
-    return accessToken, refreshToken;
+    return { accessToken, refreshToken };
   } catch (error) {
     throw new ApiError(500, "Something went wrong in token generation.");
   }
@@ -34,6 +34,7 @@ const registerUser = asyncHandler(async (req, res) => {
       "User with same username or email address already exists!"
     );
   }
+
   const avatarLocalFilePath = req.files?.avatar[0]?.path;
   const coverImageLocalFilePath = req.files?.coverImage
     ? req.files?.coverImage[0]?.path
@@ -77,7 +78,7 @@ const loginUser = asyncHandler(async (req, res) => {
   if (!user) {
     throw new ApiError(404, "User not found.");
   }
-  const isPasswordValid = user.isPasswordCorrect(password);
+  const isPasswordValid = await user.isPasswordCorrect(password);
   if (!isPasswordValid) {
     throw new ApiError(401, "Invalid user credentials.");
   }
@@ -87,6 +88,7 @@ const loginUser = asyncHandler(async (req, res) => {
     httpOnly: true,
     secure: true,
   };
+  console.log(accessToken, refreshToken);
   return res
     .status(200)
     .cookie("accessToken", accessToken, options)
