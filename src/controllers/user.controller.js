@@ -3,11 +3,11 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import uploadOnCloudnary from "../utils/cloudinary.js";
 import { User } from "../models/user.model.js";
-const generateTokens = async () => {
+const generateTokens = async (userId) => {
   try {
     const user = await User.findOne(userId);
-    const accessToken = user.generateAccessToken();
-    const refreshToken = user.generateRefreshToken();
+    const accessToken = await user.generateAccessToken();
+    const refreshToken = await user.generateRefreshToken();
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
     return accessToken, refreshToken;
@@ -67,7 +67,7 @@ const registerUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "User created successfully!"));
 });
 const loginUser = asyncHandler(async (req, res) => {
-  const { email, username, passowrd } = req.body;
+  const { email, username, password } = req.body;
   if (!username && !email) {
     throw new ApiError(400, "Enter username or email address.");
   }
@@ -77,7 +77,7 @@ const loginUser = asyncHandler(async (req, res) => {
   if (!user) {
     throw new ApiError(404, "User not found.");
   }
-  const isPasswordValid = user.isPasswordCorrect(passowrd);
+  const isPasswordValid = user.isPasswordCorrect(password);
   if (!isPasswordValid) {
     throw new ApiError(401, "Invalid user credentials.");
   }
@@ -91,14 +91,7 @@ const loginUser = asyncHandler(async (req, res) => {
     .status(200)
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
-    .json(
-      new ApiResponse(200, {
-        user: loggedInUser,
-        accessToken,
-        refreshToken,
-      }),
-      "User logged in successfully."
-    );
+    .json("User logged in successfully.");
 });
 const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
