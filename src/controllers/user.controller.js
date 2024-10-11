@@ -3,7 +3,7 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import uploadOnCloudnary from "../utils/cloudinary.js";
 import { User } from "../models/user.model.js";
-import jwt, { verify } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 const generateTokens = async (userId) => {
   try {
     const user = await User.findOne(userId);
