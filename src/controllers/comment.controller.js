@@ -1,5 +1,6 @@
 import { Comment } from "../models/comment.model.js";
 import { Video } from "../models/video.model.js";
+import mongoose from "mongoose";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
@@ -9,9 +10,13 @@ const getVideoComments = asyncHandler(async (req, res) => {
   if (!videoId) {
     throw new ApiError(400, "Video ID is required.");
   }
+  const video = await Video.findById(videoId);
+  if (!video) {
+    throw new ApiError(404, "Video not found.");
+  }
   try {
     const comments = await Comment.aggregate([
-      { $match: { video: mongoose.Types.objectId(videoId) } },
+      { $match: { video: new mongoose.Types.ObjectId(videoId) } },
       { $skip: (page - 1) * limit },
       { $limit: limit },
       {
@@ -43,7 +48,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
 const addComment = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
   const { content } = req.body;
-  if (content.trim() && videoId) {
+  if (!(content.trim() && videoId)) {
     throw new ApiError(400, "Content required and/or video required.");
   }
   const video = await Video.findById(videoId);
@@ -51,8 +56,8 @@ const addComment = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Video not found.");
   }
   const createdComment = await Comment.create({
-    user: req.user._id,
-    video: video?._id,
+    owner: req.user._id,
+    video: videoId,
     content,
   });
   if (!createdComment) {
