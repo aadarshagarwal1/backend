@@ -24,11 +24,11 @@ const videoSchema = new Schema(
       required: true,
     },
     duration: {
-      type: number,
+      type: Number,
       required: true,
     },
     views: {
-      type: number,
+      type: Number,
       required: true,
       default: 0,
     },
