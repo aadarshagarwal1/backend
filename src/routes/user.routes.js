@@ -30,7 +30,7 @@ router.route("/register").post(
 );
 router.route("/login").post(loginUser);
 
-//secured routes
+//secured routes : access token is verified before these operations can be performed
 router.route("/logout").post(verifyJWT, logoutUser);
 router.route("/refresh-token").post(refreshAccessToken);
 router.route("/change-password").post(verifyJWT, changeCurrentPassword);
