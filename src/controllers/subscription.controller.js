@@ -101,7 +101,6 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
 
 // controller to return channel list to which user has subscribed
 const getSubscribedChannels = asyncHandler(async (req, res) => {
-  console.log(req.user._id);
   const subscribedChannels = await Subscription.aggregate([
     {
       $match: {
