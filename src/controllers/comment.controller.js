@@ -7,7 +7,6 @@ import asyncHandler from "../utils/asyncHandler.js";
 const getVideoComments = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
   const { page = 1, limit = 10 } = req.query;
-  const paginationOptions = { page, limit };
   if (!videoId) {
     throw new ApiError(400, "Video ID is required.");
   }
@@ -36,7 +35,9 @@ const getVideoComments = asyncHandler(async (req, res) => {
         },
       },
       { $addFields: { owner: { $first: "$owner" } } },
-    ]).aggregatePaginate(paginationOptions);
+      { $limit: limit },
+      { $skip: (page - 1) * limit },
+    ]);
     return res
       .status(200)
       .json(new ApiResponse(200, comments, "Comments fetched successfully."));

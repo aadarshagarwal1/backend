@@ -7,8 +7,12 @@ import uploadOnCloudinary from "../utils/cloudinary.js";
 
 const getAllVideos = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10 } = req.query;
-  let { sortBy = "views", sortType = "asc", query = null } = req.query;
-  sortBy = sortBy.toString().trim().toLowerCase();
+  let {
+    sortBy = "views",
+    sortType = "asc",
+    query = "getAllVideos",
+  } = req.query;
+  sortBy = sortBy?.toString().trim().toLowerCase();
   sortType = sortType?.toString().trim().toLowerCase();
   query = query?.toString().trim().toLowerCase();
   const userId = req.user?._id;
@@ -21,7 +25,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
   if (
     query !== "published=true" &&
     query !== "published=false" &&
-    query !== "getAllVideos"
+    query !== "getallvideos"
   ) {
     throw new ApiError(400, "Invalid aggregation query.");
   }
@@ -34,15 +38,13 @@ const getAllVideos = asyncHandler(async (req, res) => {
   const aggregationPipeline = [
     { $match: { owner: new mongoose.Types.ObjectId(userId) } },
     { $sort: { [sortBy]: sortType === "asc" ? 1 : -1 } },
+    { $limit: Number(limit) },
+    { $skip: (Number(page) - 1) * Number(limit) },
   ];
   if (query !== null) {
     aggregationPipeline.push({ $match: { isPublished: query } });
   }
-  const paginationOptions = { page, limit };
-  const videos =
-    await Video.aggregate(aggregationPipeline).aggregatePaginate(
-      paginationOptions
-    );
+  const videos = await Video.aggregate(aggregationPipeline);
   if (!videos) {
     throw new ApiError(500, "Something went wrong with video aggregation.");
   }
@@ -54,14 +56,18 @@ const getAllVideos = asyncHandler(async (req, res) => {
 const publishVideo = asyncHandler(async (req, res) => {
   // TODO: get video, upload to cloudinary, create video
   const { title, description } = req.body;
-  if (!title.trim() || !description.trim()) {
+  if (!title?.trim() || !description?.trim()) {
     throw new ApiError(400, "Title and/or description required.");
+  }
+  if (!req.files?.videoFile || !req.files?.thumbnail) {
+    throw new ApiError(400, "Video file and/or thumbnail required.");
   }
   const videoFileLocalFilePath = req.files?.videoFile[0]?.path;
   const thumbnailLocalFilePath = req.files?.thumbnail[0]?.path;
   if (!videoFileLocalFilePath || !thumbnailLocalFilePath) {
-    throw new ApiError(400, "Video file and/or thumbnail required.");
+    throw new ApiError(500, "Something went wrong with multer functioning.");
   }
+
   const videoFile = await uploadOnCloudinary(videoFileLocalFilePath);
   if (!videoFile) {
     throw new ApiError(500, "Video file upload on cloudinary failed.");
@@ -76,7 +82,7 @@ const publishVideo = asyncHandler(async (req, res) => {
     owner: req.user?._id,
     title,
     description,
-    duration: videoFile.video.duration,
+    duration: videoFile.duration,
   });
   if (!publishedVideo) {
     throw new ApiError(500, "Something went wrong. Video not published.");
@@ -116,8 +122,8 @@ const updateVideoDetails = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Unauthorized request.");
   }
   const { title, description } = req.body;
-  const thumbnailLocalFilePath = req.files?.thumbnail[0]?.path;
-  if (!title?.trim() && description.trim() && !thumbnailLocalFilePath) {
+  const thumbnailLocalFilePath = req.file?.path;
+  if (!title?.trim() && !description?.trim() && !thumbnailLocalFilePath) {
     throw new ApiError(
       400,
       "Enter atleast one field: title, description or thumbnail."
@@ -181,7 +187,7 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Unauthorized request.");
   }
   video.isPublished = !video.isPublished;
-  const updatedVideo = await Video.save({ validateBeforeSave: false });
+  const updatedVideo = await video.save({ validateBeforeSave: false });
   if (!updatedVideo) {
     throw new ApiError(
       500,
