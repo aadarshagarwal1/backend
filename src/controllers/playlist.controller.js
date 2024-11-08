@@ -164,7 +164,7 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Video already present in the playlist.");
   }
   playlist.videos.push(new mongoose.Types.ObjectId(videoId));
-  const updatedPlaylist = await playlist.save();
+  const updatedPlaylist = await playlist.save({ validateBeforeSave: false });
   if (!updatedPlaylist) {
     throw new ApiError(
       500,
@@ -195,7 +195,7 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
   }
   if (playlist.videos.some((id) => id.toString() === videoId.toString())) {
     playlist.videos.pull(videoId);
-    const updatedPlaylist = await playlist.save();
+    const updatedPlaylist = await playlist.save({ validateBeforeSave: false });
     if (!updatedPlaylist) {
       throw new ApiError(
         500,

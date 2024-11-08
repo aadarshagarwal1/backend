@@ -181,7 +181,7 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Unauthorized request.");
   }
   video.isPublished = !video.isPublished;
-  const updatedVideo = await Video.save();
+  const updatedVideo = await Video.save({ validateBeforeSave: false });
   if (!updatedVideo) {
     throw new ApiError(
       500,
